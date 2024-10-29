@@ -2,11 +2,13 @@ package workdirs
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
+
+	"github.com/charlievieth/fastwalk"
 )
 
 // Workdirs searches each path in paths for git repositories
@@ -21,6 +23,10 @@ func Workdirs() []string {
 	workdirs = append(
 		workdirs,
 		findDirsIn(os.Getenv("PROJECTS"))...,
+	)
+	workdirs = append(
+		workdirs,
+		findDirsIn(os.Getenv("DOTFILES"))...,
 	)
 	workdirs = append(
 		workdirs,
@@ -68,49 +74,37 @@ func findDirsIn(path string) []string {
 }
 
 func findGitDirs(path string) []string {
-	var repos []string
-	var wg sync.WaitGroup
+	var dirs []string
 	dirCh := make(chan string)
-	done := make(chan struct{})
 
 	go func() {
-		for repo := range dirCh {
-			repos = append(repos, repo)
+		for dir := range dirCh {
+			dirs = append(dirs, dir)
 		}
-		close(done)
 	}()
 
-	// Walk function using goroutines
-	var walkDir func(string)
-	walkDir = func(path string) {
-		defer wg.Done()
-		entries, err := os.ReadDir(path)
-		if err != nil {
-			return
-		}
-		for _, entry := range entries {
-			if entry.IsDir() {
-				subPath := filepath.Join(path, entry.Name())
-				if entry.Name() == "node_modules" {
-					continue
-				}
-				if entry.Name() == ".git" {
-					dirCh <- filepath.Dir(subPath)
-					continue
-				}
-				wg.Add(1)
-				go walkDir(subPath)
+	err := fastwalk.Walk(
+		&fastwalk.DefaultConfig,
+		path,
+		func(path string, d fs.DirEntry, err error) error {
+			if err != nil || !d.IsDir() {
+				return nil
 			}
-		}
+			if d.Name() == "node_modules" {
+				return filepath.SkipDir
+			}
+			if d.Name() == ".git" {
+				dirCh <- filepath.Dir(path)
+				return filepath.SkipDir
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return []string{}
 	}
-
-	wg.Add(1)
-	go walkDir(path)
-	wg.Wait()
 	close(dirCh)
-	<-done
-
-	return repos
+	return dirs
 }
 
 func dedupe(slice []string) []string {
@@ -152,22 +146,32 @@ func resolveSymlink(path string) (string, error) {
 // absolute paths of the worktrees.
 func Worktrees() []string {
 	worktrees := make([]string, 0)
-	filepath.Walk(
+	dirCh := make(chan string)
+
+	err := fastwalk.Walk(
+		&fastwalk.DefaultConfig,
 		os.Getenv("PROJECTS"),
-		func(curr string, info os.FileInfo, err error) error {
+		func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return nil
 			}
-			if dir := filepath.Dir(curr); !info.IsDir() &&
-				info.Name() == ".git" &&
-				isWorktree(dir) &&
-				!isSubmodule(dir) {
-				worktrees = append(worktrees, dir)
+			if d.Name() == "node_modules" {
+				return filepath.SkipDir
+			}
+			if !d.IsDir() && d.Name() == ".git" &&
+				isWorktree(path) &&
+				!isSubmodule(path) {
+				dirCh <- path
 				return filepath.SkipDir
 			}
 			return nil
 		},
 	)
+	if err != nil {
+		return []string{}
+	}
+
+	close(dirCh)
 	return worktrees
 }
 
