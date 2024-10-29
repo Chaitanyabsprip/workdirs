@@ -189,3 +189,15 @@ func isSubmodule(path string) bool {
 	output, err := cmd.CombinedOutput()
 	return err == nil && len(strings.TrimSpace(string(output))) > 0
 }
+
+func Shorten(paths []string) []string {
+	shortPaths := make([]string, 0)
+	for _, path := range paths {
+		sPath := strings.ReplaceAll(path, os.Getenv("HOME"), "")
+		if sPath[0] == '.' || sPath[0] == '/' {
+			sPath = sPath[1:]
+		}
+		shortPaths = append(shortPaths, sPath)
+	}
+	return shortPaths
+}
