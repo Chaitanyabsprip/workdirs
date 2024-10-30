@@ -148,24 +148,36 @@ func Worktrees() []string {
 	worktrees := make([]string, 0)
 	dirCh := make(chan string)
 
+	go func() {
+		for dir := range dirCh {
+			worktrees = append(worktrees, dir)
+		}
+	}()
+
+	walkfn := func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
+		switch d.Name() {
+		case `.venv`, `node_modules`:
+			return filepath.SkipDir
+		case `.git`:
+			if d.IsDir() || d.Type()&os.ModeSymlink != 0 {
+				return filepath.SkipDir
+			}
+			if isWorktree(filepath.Dir(path)) &&
+				!isSubmodule(filepath.Dir(path)) {
+				dirCh <- filepath.Dir(path)
+				return filepath.SkipDir
+			}
+		}
+		return nil
+	}
+
 	err := fastwalk.Walk(
 		&fastwalk.DefaultConfig,
 		os.Getenv("PROJECTS"),
-		func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return nil
-			}
-			if d.Name() == "node_modules" {
-				return filepath.SkipDir
-			}
-			if !d.IsDir() && d.Name() == ".git" &&
-				isWorktree(path) &&
-				!isSubmodule(path) {
-				dirCh <- path
-				return filepath.SkipDir
-			}
-			return nil
-		},
+		walkfn,
 	)
 	if err != nil {
 		return []string{}
@@ -185,12 +197,11 @@ func isWorktree(path string) bool {
 func isSubmodule(path string) bool {
 	cmd := exec.Command(
 		"git",
-		"-C",
-		path,
 		"rev-parse",
 		"--show-superproject-working-tree",
 	)
-	output, err := cmd.CombinedOutput()
+	cmd.Dir = path
+	output, err := cmd.Output()
 	return err == nil && len(strings.TrimSpace(string(output))) > 0
 }
 
