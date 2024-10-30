@@ -2,8 +2,8 @@ github.com/charlievieth/fastwalk v1.0.9 h1:Odb92AfoReO3oFBfDGT5J+nwgzQPF/gWAw6E6
 github.com/charlievieth/fastwalk v1.0.9/go.mod h1:yGy1zbxog41ZVMcKA/i8ojXLFsuayX5VvwhQVoj9PBI=
 github.com/rogpeppe/go-internal v1.13.1 h1:KvO1DLK/DRN07sQ1LQKScxyZJuNnedQ5/wKSR38lUII=
 github.com/rogpeppe/go-internal v1.13.1/go.mod h1:uMEvuHeurkdAXX61udpOXGD/AzZDWNMNyH2VO9fmH0o=
-github.com/rwxrob/bonzai v0.20.11-0.20241030194129-8719f28ed805 h1:K+JZeA01zRdx8wu9pp3HOOTtdotk9CwDZLq/yFY9PXI=
-github.com/rwxrob/bonzai v0.20.11-0.20241030194129-8719f28ed805/go.mod h1:+LRuhoW+SuRLmLh2IcJRXfWoZzO4i8Ml5LP/LhIdrWc=
+github.com/rwxrob/bonzai v0.20.11-0.20241030220917-eadec08f5e8f h1:ZzKUh1SfTj9fu65bAdpyXSIY8KK1Q7k5rKGgGvxZlv0=
+github.com/rwxrob/bonzai v0.20.11-0.20241030220917-eadec08f5e8f/go.mod h1:+LRuhoW+SuRLmLh2IcJRXfWoZzO4i8Ml5LP/LhIdrWc=
 golang.org/x/crypto v0.28.0 h1:GBDwsMXVQi34v5CCYUm2jkJvu4cbtru2U4TN2PSyQnw=
 golang.org/x/crypto v0.28.0/go.mod h1:rmgy+3RHxRZMyY0jjAJShp2zgEdOqj2AO7U0pYmeQ7U=
 golang.org/x/sys v0.26.0 h1:KHjCJyddX0LoSTb3J+vWpupP9p0oznkqVk/IfjymZbo=

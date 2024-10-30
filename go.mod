@@ -14,4 +14,4 @@ require (
 	golang.org/x/term v0.25.0 // indirect
 )
 
-replace github.com/rwxrob/bonzai => github.com/rwxrob/bonzai v0.20.11-0.20241030194129-8719f28ed805
+replace github.com/rwxrob/bonzai => github.com/rwxrob/bonzai v0.20.11-0.20241030220917-eadec08f5e8f
