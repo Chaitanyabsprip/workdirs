@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/charlievieth/fastwalk"
 )
@@ -209,9 +210,9 @@ func Shorten(paths []string) []string {
 	shortPaths := make([]string, 0)
 	for _, path := range paths {
 		sPath := strings.ReplaceAll(path, os.Getenv("HOME"), "")
-		if sPath[0] == '.' || sPath[0] == '/' {
-			sPath = sPath[1:]
-		}
+		sPath = strings.TrimLeftFunc(sPath, func(r rune) bool {
+			return !unicode.IsLetter(r)
+		})
 		shortPaths = append(shortPaths, sPath)
 	}
 	return shortPaths
