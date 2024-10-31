@@ -5,9 +5,9 @@ clean:
 	@rm -rd ./bin
 
 install: ${SOURCES}
-	@go install ./cmd/work
-	@go install ./cmd/workdirs
-	@go install ./cmd/worktrees
+	@go install -v ./cmd/work
+	@go install -v ./cmd/workdirs
+	@go install -v ./cmd/worktrees
 
 work: ${SOURCES}
 	@go run ./cmd/work
